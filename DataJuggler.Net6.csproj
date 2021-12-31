@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+	<TargetFramework>net6.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Data Juggler</Authors>
     <Company>Data Juggler</Company>
@@ -17,12 +17,16 @@ CSharpClassWriter - A class that is useful in code generating C# classes.
 </Description>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/DataJuggler/DataJuggler.Net6</PackageProjectUrl>
-    <Version>6.0.0</Version>
+    <Version>6.0.1</Version>
     <Copyright>Data Juggler - Corby Nichols</Copyright>
     <RepositoryType>Git Hub</RepositoryType>
     <RepositoryUrl>https://github.com/DataJuggler/DataJuggler.Net6.git</RepositoryUrl>
     <PackageTags>C#, SQL Server, DataTier.Net, DataJuggler.Net</PackageTags>
-    <PackageReleaseNotes>3.0.6: I added a new property called CreatedFilePaths. This list of strings will contain the full path of all
+    <PackageReleaseNotes>
+		12.31.2021
+		Version 6.0.1: I upgraded the reference to Microsoft.Data.SqlClient to 4.0.0.
+		
+		3.0.6: I added a new property called CreatedFilePaths. This list of strings will contain the full path of all
 files created during WriteClasses method.
 
 Also, I found out why I had problems with Nuget version 3.0.2 - 3.0.5. I had a project reference and a Nuget reference, and Nuget and / or Visual Studio didn't like it.
@@ -59,8 +63,8 @@ Version 2.5.0: This version converted the .Net Core version to .Net 5. All the d
 
   <ItemGroup>
     <PackageReference Include="DataJuggler.Cryptography" Version="6.0.2" />
-    <PackageReference Include="DataJuggler.UltimateHelper" Version="1.7.1" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.1" />
+    <PackageReference Include="DataJuggler.UltimateHelper" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="4.0.0" />
   </ItemGroup>
 
   <ItemGroup>
