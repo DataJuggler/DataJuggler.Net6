@@ -17,7 +17,7 @@ CSharpClassWriter - A class that is useful in code generating C# classes.
 </Description>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/DataJuggler/DataJuggler.Net6</PackageProjectUrl>
-    <Version>6.0.1</Version>
+    <Version>6.0.2</Version>
     <Copyright>Data Juggler - Corby Nichols</Copyright>
     <RepositoryType>Git Hub</RepositoryType>
     <RepositoryUrl>https://github.com/DataJuggler/DataJuggler.Net6.git</RepositoryUrl>
@@ -64,7 +64,7 @@ Version 2.5.0: This version converted the .Net Core version to .Net 5. All the d
   <ItemGroup>
     <PackageReference Include="DataJuggler.Cryptography" Version="6.0.2" />
     <PackageReference Include="DataJuggler.UltimateHelper" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="4.0.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.1" />
   </ItemGroup>
 
   <ItemGroup>
