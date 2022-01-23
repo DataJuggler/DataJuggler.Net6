@@ -1293,8 +1293,7 @@ namespace DataJuggler.Net6
 				string temp = sb.ToString();
 				
 				// return SaveObject
-				return temp;
-												
+				return temp;												
 			}
 			#endregion
 				
