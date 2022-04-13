@@ -17,14 +17,19 @@ CSharpClassWriter - A class that is useful in code generating C# classes.
 </Description>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/DataJuggler/DataJuggler.Net6</PackageProjectUrl>
-    <Version>6.0.4</Version>
+    <Version>6.0.5</Version>
     <Copyright>Data Juggler - Corby Nichols</Copyright>
     <RepositoryType>Git Hub</RepositoryType>
     <RepositoryUrl>https://github.com/DataJuggler/DataJuggler.Net6.git</RepositoryUrl>
     <PackageTags>C#, SQL Server, DataTier.Net, DataJuggler.Net</PackageTags>
     <PackageReleaseNotes>
+		4.13.2022: I added a new method to SQL Database Connector to get the text for a view. This was needed for 
+		DB Compare had a bug when it tried to generate sql for a view. Tables are easy, views I had to get the actual text
+		to make sure all the joins are correct.
+		
 		12.31.2021
-		Version 6.0.1: I upgraded the reference to Microsoft.Data.SqlClient to 4.0.0.
+		Version 6.0.1: I upgraded the reference to Microsoft.Data.SqlClient to 4.0.0. Turns out this breaks everything without encrypt =false,
+		so I took this out.
 		
 		3.0.6: I added a new property called CreatedFilePaths. This list of strings will contain the full path of all
 files created during WriteClasses method.

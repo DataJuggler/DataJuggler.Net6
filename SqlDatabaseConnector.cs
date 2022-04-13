@@ -383,6 +383,170 @@ namespace DataJuggler.Net6
 			}
 			#endregion
 
+            #region FindDepenciesForStoredProcedure(string procedureName, List<DataTable> allTables)
+            /// <summary>
+            /// This method finds all dependent tables and views for a stored procedure.
+            /// Note: The allTables collection must exist and this works only for single database querries.
+            /// </summary>
+            /// <param name="procedureName">The name of the procedure to find dependencies for</param>
+            /// <param name="allTables">All the tables for a database.</param>
+            /// <returns></returns>
+            public List<DataTable> FindDepenciesForStoredProcedure(string procedureName, List<DataTable> allTables)
+            {
+                // initial value
+                List<DataTable> depencies = new List<DataTable>();
+
+                try
+                {
+                    // if the procedureName is set and the allTables collection contains at least one item
+                    if ((TextHelper.Exists(procedureName)) && (ListHelper.HasOneOrMoreItems(allTables)))
+                    {
+                        // query to load all table names for this procedure
+                        string sql = "SELECT objects.name As DepencyName FROM sys.procedures INNER  JOIN sys.all_sql_modules ON all_sql_modules.object_id = procedures.object_id LEFT  JOIN sys.objects ON objects.name <> procedures.name AND all_sql_modules.definition LIKE '%' + objects.name + '%' WHERE  procedures.name = '" + procedureName + "'";
+
+                         // Open The command Object
+                        SqlCommand command = new SqlCommand(sql, DatabaseConnection);
+
+                        // Create a data adapter
+                        SqlDataAdapter adapter = new SqlDataAdapter(command);
+
+                        // Create And Open Data
+                        DataSet DS = new DataSet();
+
+                        // Fill DataAdapter
+                        adapter.Fill(DS, "tables");
+
+                        // Load the CheckConstraints
+                        foreach (System.Data.DataRow dataRow in DS.Tables["tables"].Rows)
+                        {
+                            // set the tableName
+                            string tableName = (string) dataRow["DepencyName"];
+
+                            // If the tableName string exists
+                            if (TextHelper.Exists(tableName))
+                            {
+                                // attempt to find this table in allTables
+                                DataTable tempDepency = allTables.FirstOrDefault(x => x.Name == tableName);
+
+                                // If the tempDepency object exists
+                                if (NullHelper.Exists(tempDepency))
+                                {
+                                    // Add this table
+                                    depencies.Add(tempDepency);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception error)
+                {
+                    // for debugging only
+                    string err = error.ToString();
+
+                    // Write the error to the debugger
+                    DebugHelper.WriteDebugError("FindDepenciesForStoredProcedure", "SQLDatabaseConnector", error);
+                }
+
+                // return value
+                return depencies;
+            }
+            #endregion
+
+            #region FindInsertIndex(List<DataField> dataFields, DataField field) 
+            /// <summary>
+            /// This method is used to find the field index of where to insert a field
+            /// </summary>
+            /// <param name="dataFields"></param>
+            /// <param name="field"></param>
+            /// <returns></returns>
+            public int FindInsertIndex(List<DataField> dataFields, DataField field) 
+            {
+                // initial value
+                int index = -1;
+
+                // local
+                int tempIndex = -1;
+
+                // iif the dataFields exist and the field exists
+                if ((ListHelper.HasOneOrMoreItems(dataFields)) && (NullHelper.Exists(field)))
+                {
+                    // Iterate the collection of DataField objects
+                    foreach (DataField tempField in dataFields)
+                    {
+                        // Increment the value for tempIndex
+                        tempIndex++;
+
+                        // set the value for compare
+                        int compare = String.Compare(tempField.FieldName, field.FieldName);
+
+                        // if we have reached the insert index
+                        if (compare > 0)
+                        {
+                            // set the return value
+                            index = tempIndex;
+
+                            // break out of the loop
+                            break;
+                        }
+                    }
+
+                    // if the index was not found
+                    if (index < 0)
+                    {
+                        // set the return value to the end (not found goes at the end)
+                        index = dataFields.Count;
+                    }
+                }
+                else
+                {
+                    // set to 0 for the first one
+                    index = 0;
+                }
+
+                // return value
+                return index;
+            }
+            #endregion
+			
+            #region FindPrimaryKeysCount(List<DataTable> depencies)
+            /// <summary>
+            /// This method is used to find the count of primary keys in the tables collection listed
+            /// </summary>
+            /// <param name="tables"></param>
+            /// <returns></returns>
+            public int FindPrimaryKeysCount(List<DataTable> depencies)
+            {
+                // initial value
+                int primaryKeysCount = 0;
+
+                // If the dependencies collection exists and has one or more items
+                if (ListHelper.HasOneOrMoreItems(depencies))
+                {
+                    // Iterate the collection of DataTable objects
+                    foreach (DataTable table in depencies)
+                    {
+                        // if there are one or more fields                       
+                        if (ListHelper.HasOneOrMoreItems(table.ActiveFields))
+                        {
+                            // iterate the collection of fields
+                            foreach (DataField field in table.ActiveFields)
+                            {
+                                // if this field is a Primary Key
+                                if (field.PrimaryKey)
+                                {
+                                    // Increment the value for primaryKeysCount
+                                    primaryKeysCount++;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // return value
+                return primaryKeysCount;
+            }
+            #endregion
+
             #region FindField(List<DataField> fields, string fieldName)
             /// <summary>
             /// This method finds the Index of a field in the fields collection.
@@ -1202,167 +1366,44 @@ namespace DataJuggler.Net6
             }
             #endregion
 
-            #region FindDepenciesForStoredProcedure(string procedureName, List<DataTable> allTables)
+            #region GetViewText(string viewName)
             /// <summary>
-            /// This method finds all dependent tables and views for a stored procedure.
-            /// Note: The allTables collection must exist and this works only for single database querries.
+            /// This method returns the text for a view
             /// </summary>
-            /// <param name="procedureName">The name of the procedure to find dependencies for</param>
-            /// <param name="allTables">All the tables for a database.</param>
+            /// <param name="viewName"></param>
             /// <returns></returns>
-            public List<DataTable> FindDepenciesForStoredProcedure(string procedureName, List<DataTable> allTables)
+            public string GetViewText(string viewName)
             {
                 // initial value
-                List<DataTable> depencies = new List<DataTable>();
+                string sql = "";
 
                 try
                 {
-                    // if the procedureName is set and the allTables collection contains at least one item
-                    if ((TextHelper.Exists(procedureName)) && (ListHelper.HasOneOrMoreItems(allTables)))
-                    {
-                        // query to load all table names for this procedure
-                        string sql = "SELECT objects.name As DepencyName FROM sys.procedures INNER  JOIN sys.all_sql_modules ON all_sql_modules.object_id = procedures.object_id LEFT  JOIN sys.objects ON objects.name <> procedures.name AND all_sql_modules.definition LIKE '%' + objects.name + '%' WHERE  procedures.name = '" + procedureName + "'";
+                    string sourceSQL = "Select definition, uses_ansi_nulls, uses_quoted_identifier, is_schema_bound FROM";
+                    sourceSQL += " sys.sql_modules Where object_id = object_id('" + viewName + "');";
 
-                         // Open The command Object
-                        SqlCommand command = new SqlCommand(sql, DatabaseConnection);
+                    // Open The command Object
+                    SqlCommand command = new SqlCommand(sourceSQL, DatabaseConnection);
 
-                        // Create a data adapter
-                        SqlDataAdapter adapter = new SqlDataAdapter(command);
+                    // Create a data adapter
+                    SqlDataAdapter adapter = new SqlDataAdapter(command);
 
-                        // Create And Open Data
-                        DataSet DS = new DataSet();
+                    // Create And Open Data
+                    DataSet DS = new DataSet();
 
-                        // Fill DataAdapter
-                        adapter.Fill(DS, "tables");
+                    // Fill DataAdapter
+                    adapter.Fill(DS, "Views");
 
-                        // Load the CheckConstraints
-                        foreach (System.Data.DataRow dataRow in DS.Tables["tables"].Rows)
-                        {
-                            // set the tableName
-                            string tableName = (string) dataRow["DepencyName"];
-
-                            // If the tableName string exists
-                            if (TextHelper.Exists(tableName))
-                            {
-                                // attempt to find this table in allTables
-                                DataTable tempDepency = allTables.FirstOrDefault(x => x.Name == tableName);
-
-                                // If the tempDepency object exists
-                                if (NullHelper.Exists(tempDepency))
-                                {
-                                    // Add this table
-                                    depencies.Add(tempDepency);
-                                }
-                            }
-                        }
-                    }
+                    sql = DS.Tables[0].Rows[0].ItemArray[0].ToString();
                 }
                 catch (Exception error)
                 {
-                    // for debugging only
-                    string err = error.ToString();
-
-                    // Write the error to the debugger
-                    DebugHelper.WriteDebugError("FindDepenciesForStoredProcedure", "SQLDatabaseConnector", error);
+                    // for debugging only for now
+                    DebugHelper.WriteDebugError("GetViewText", "SQLDatabaseConnector", error);
                 }
 
                 // return value
-                return depencies;
-            }
-            #endregion
-
-            #region FindInsertIndex(List<DataField> dataFields, DataField field) 
-            /// <summary>
-            /// This method is used to find the field index of where to insert a field
-            /// </summary>
-            /// <param name="dataFields"></param>
-            /// <param name="field"></param>
-            /// <returns></returns>
-            public int FindInsertIndex(List<DataField> dataFields, DataField field) 
-            {
-                // initial value
-                int index = -1;
-
-                // local
-                int tempIndex = -1;
-
-                // iif the dataFields exist and the field exists
-                if ((ListHelper.HasOneOrMoreItems(dataFields)) && (NullHelper.Exists(field)))
-                {
-                    // Iterate the collection of DataField objects
-                    foreach (DataField tempField in dataFields)
-                    {
-                        // Increment the value for tempIndex
-                        tempIndex++;
-
-                        // set the value for compare
-                        int compare = String.Compare(tempField.FieldName, field.FieldName);
-
-                        // if we have reached the insert index
-                        if (compare > 0)
-                        {
-                            // set the return value
-                            index = tempIndex;
-
-                            // break out of the loop
-                            break;
-                        }
-                    }
-
-                    // if the index was not found
-                    if (index < 0)
-                    {
-                        // set the return value to the end (not found goes at the end)
-                        index = dataFields.Count;
-                    }
-                }
-                else
-                {
-                    // set to 0 for the first one
-                    index = 0;
-                }
-
-                // return value
-                return index;
-            }
-            #endregion
-			
-            #region FindPrimaryKeysCount(List<DataTable> depencies)
-            /// <summary>
-            /// This method is used to find the count of primary keys in the tables collection listed
-            /// </summary>
-            /// <param name="tables"></param>
-            /// <returns></returns>
-            public int FindPrimaryKeysCount(List<DataTable> depencies)
-            {
-                // initial value
-                int primaryKeysCount = 0;
-
-                // If the dependencies collection exists and has one or more items
-                if (ListHelper.HasOneOrMoreItems(depencies))
-                {
-                    // Iterate the collection of DataTable objects
-                    foreach (DataTable table in depencies)
-                    {
-                        // if there are one or more fields                       
-                        if (ListHelper.HasOneOrMoreItems(table.ActiveFields))
-                        {
-                            // iterate the collection of fields
-                            foreach (DataField field in table.ActiveFields)
-                            {
-                                // if this field is a Primary Key
-                                if (field.PrimaryKey)
-                                {
-                                    // Increment the value for primaryKeysCount
-                                    primaryKeysCount++;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // return value
-                return primaryKeysCount;
+                return sql;
             }
             #endregion
 
@@ -2013,7 +2054,7 @@ namespace DataJuggler.Net6
 				}
 				#endregion
 
-                #region LoadDataRowsWithBinaryData(DataTable dataTable)
+                #region LoadDataRowsWithBinaryData(DataTable dataTable, string sql)
                 /// <summary>
                 /// This method loads the data rows that contain binary data.
                 /// A SqlDataReader is used so that SequentialAccess can be set.
@@ -2138,13 +2179,13 @@ namespace DataJuggler.Net6
                 }
                 #endregion
 
-                #region LoadDataRowsWithoutBinaryData(DataTable dataTable)
+                #region LoadDataRowsWithoutBinaryData(DataTable dataTable, string sql = "")
                 /// <summary>
                 /// This method loads the DataRows without Binary data.
                 /// </summary>
                 /// <param name="dataTable"></param>
                 /// <returns></returns>
-                private List<DataRow> LoadDataRowsWithoutBinaryData(DataTable dataTable)
+                public List<DataRow> LoadDataRowsWithoutBinaryData(DataTable dataTable, string sql = "")
                 {
                     // Create DataSet
                     DataSet dataSet = new DataSet();
@@ -2155,8 +2196,20 @@ namespace DataJuggler.Net6
                     // Create the adapter to read the fields
                     SqlDataAdapter dataAdapter = new SqlDataAdapter(this.Command);
 
-                    // Fill DataAdapter
-                    dataAdapter.Fill(dataSet, dataTable.Name);
+                    // if custom sql was passed in
+                    if (TextHelper.Exists(sql))
+                    {
+                        // Create the adapter to read the fields
+                        dataAdapter = new SqlDataAdapter(sql, this.DatabaseConnection);
+
+                        // Fill DataAdapter
+                        dataAdapter.Fill(dataSet, sql);
+                    }
+                    else
+                    {
+                        // Fill DataAdapter
+                        dataAdapter.Fill(dataSet, dataTable.Name);
+                    }
                     
                     // Loop through each row in the dataSet
                     foreach (System.Data.DataRow tempDataRow in dataSet.Tables[dataTable.Name].Rows)
