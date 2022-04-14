@@ -17,12 +17,18 @@ CSharpClassWriter - A class that is useful in code generating C# classes.
 </Description>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/DataJuggler/DataJuggler.Net6</PackageProjectUrl>
-    <Version>6.0.5</Version>
+    <Version>6.1.0</Version>
     <Copyright>Data Juggler - Corby Nichols</Copyright>
     <RepositoryType>Git Hub</RepositoryType>
     <RepositoryUrl>https://github.com/DataJuggler/DataJuggler.Net6.git</RepositoryUrl>
     <PackageTags>C#, SQL Server, DataTier.Net, DataJuggler.Net</PackageTags>
     <PackageReleaseNotes>
+		4.14.2022: I added two properties to DataTable and StoredProcedure classes, to keep track of
+		UsesAnsiNulls and UseQuotedIdentifiers. I now set these objects when I load the DatabaseSchema.
+		It turns out, the text for the Defition of the View or Stored Procedure already had this, so not
+		really needed. Generate Scripts now creates missing fields, tables, views and stored procedures.
+		Next is constraints and keys and that is 99% of all updates I do.
+		
 		4.13.2022: I added a new method to SQL Database Connector to get the text for a view. This was needed for 
 		DB Compare had a bug when it tried to generate sql for a view. Tables are easy, views I had to get the actual text
 		to make sure all the joins are correct.

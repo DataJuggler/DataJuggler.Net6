@@ -1233,6 +1233,52 @@ namespace DataJuggler.Net6
             }
             #endregion
 
+            #region GetSqlObject(string objectName)
+            /// <summary>
+            /// This method returns a SQL Object containing the Defintion, UseAnsiNulls, UseQuotedIdentifier, IsSchemaBound
+            /// This is used by DB Compare to know if a Stored Procedure or View should have Uses Ansi Nulls and Use Quoted Identifier
+            /// on before the objects is created
+            /// </summary>
+            /// <param name="viewName"></param>
+            /// <returns></returns>
+            public SqlObject GetSqlObject(string objectName)
+            {
+                // initial value
+                SqlObject sqlObject = new SqlObject();
+
+                try
+                {
+                    string sourceSQL = "Select definition, uses_ansi_nulls, uses_quoted_identifier, is_schema_bound FROM";
+                    sourceSQL += " sys.sql_modules Where object_id = object_id('" + objectName + "');";
+
+                    // Open The command Object
+                    SqlCommand command = new SqlCommand(sourceSQL, DatabaseConnection);
+
+                    // Create a data adapter
+                    SqlDataAdapter adapter = new SqlDataAdapter(command);
+
+                    // Create And Open Data
+                    DataSet DS = new DataSet();
+
+                    // Fill DataAdapter
+                    adapter.Fill(DS, "Views");
+
+                    sqlObject.Defintion = DS.Tables[0].Rows[0].ItemArray[0].ToString();
+                    sqlObject.UsesAnsiNulls = BooleanHelper.ParseBoolean(DS.Tables[0].Rows[0].ItemArray[1].ToString(), false, false);
+                    sqlObject.UsesQuotedIdentifier = BooleanHelper.ParseBoolean(DS.Tables[0].Rows[0].ItemArray[2].ToString(), false, false);
+                    sqlObject.IsSchemaBound = BooleanHelper.ParseBoolean(DS.Tables[0].Rows[0].ItemArray[3].ToString(), false, false);
+                }
+                catch (Exception error)
+                {
+                    // for debugging only for now
+                    DebugHelper.WriteDebugError("GetViewText", "SQLDatabaseConnector", error);
+                }
+
+                // return value
+                return sqlObject;
+            }
+            #endregion
+
             #region GetStoredProcParameters(string procedureName)
             /// <summary>
             /// This method loads the Parameters for the execution of a Stored procedure.
@@ -2354,6 +2400,25 @@ namespace DataJuggler.Net6
 						// If the table should be added (Test Again)
 						if (addTable)
 						{
+                            // Attempt to get the sqlObject
+                            SqlObject sqlObject = GetSqlObject(dataTable.Name);
+
+                            // If the sqlObject object exists
+                            if (NullHelper.Exists(sqlObject))
+                            {
+                                // This is used by DB Compare to create the correct Views or Stored Procedures
+                                // In the GenerateScriptsButton_Click event.
+                                dataTable.UsesAnsiNulls = sqlObject.UsesAnsiNulls;
+                                dataTable.UsesQuotedIdentifier = sqlObject.UsesQuotedIdentifier;
+
+                                // if this is a view
+                                if (dataTable.IsView)
+                                {
+                                    // Set the ViewText so we have it for generating scripts
+                                    dataTable.ViewText = sqlObject.Defintion;
+                                }
+                            }
+
 							// Increment TableCount
 							tableCount++;
 						
@@ -2750,6 +2815,17 @@ namespace DataJuggler.Net6
 
                             // Attempt to find the text for this stored procedure
                             storedProcedure.Text = GetProcedureText(storedProcedure.ProcedureName);
+
+                            // Get the AnsiNull info
+                            SqlObject sqlObject = GetSqlObject(storedProcedure.ProcedureName);
+
+                            // If the sqlObject object exists
+                            if (NullHelper.Exists(sqlObject))
+                            {
+                                // Set these values
+                                storedProcedure.UsesAnsiNulls = sqlObject.UsesAnsiNulls;
+                                storedProcedure.UsesQuotedIdentifier = sqlObject.UsesQuotedIdentifier;
+                            }
                         }
                     }
 

@@ -38,6 +38,9 @@ namespace DataJuggler.Net6
         private string tag;
         private string schemaName;
         private bool createBindingCallback;
+        private bool usesAnsiNulls;
+        private bool usesQuotedIdentifier;
+        private string viewText;
 		#endregion
 
  		#region Constructor +1 override
@@ -859,6 +862,45 @@ namespace DataJuggler.Net6
             {
                 get { return tag; }
                 set { tag = value; }
+            }
+            #endregion
+
+            #region UsesAnsiNulls
+            /// <summary>
+            /// This property gets or sets the value for 'UsesAnsiNulls'.
+            /// </summary>
+            public bool UsesAnsiNulls
+            {
+                get { return usesAnsiNulls; }
+                set { usesAnsiNulls = value; }
+            }
+            #endregion
+            
+            #region UsesQuotedIdentifier
+            /// <summary>
+            /// This property gets or sets the value for 'UsesQuotedIdentifier'.
+            /// </summary>
+            public bool UsesQuotedIdentifier
+            {
+                get { return usesQuotedIdentifier; }
+                set { usesQuotedIdentifier = value; }
+            }
+            #endregion
+
+            #region ViewText
+            /// <summary>
+            /// This property gets or sets the value for ViewText
+            /// </summary>
+            public string ViewText
+            {
+                get
+                {
+                    return viewText;
+                }
+                set
+                {
+                    viewText = value;
+                }
             }
             #endregion
 
