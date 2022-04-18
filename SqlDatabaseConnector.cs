@@ -3361,6 +3361,8 @@ namespace DataJuggler.Net6
 						
 						case "system.datetime":
                         case "datetime":
+                        case "date":
+                        case "system.date":
 							
 							// DataTime
 							return DataManager.DataTypeEnum.DateTime;

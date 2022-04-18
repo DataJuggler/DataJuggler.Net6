@@ -17,12 +17,16 @@ CSharpClassWriter - A class that is useful in code generating C# classes.
 </Description>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/DataJuggler/DataJuggler.Net6</PackageProjectUrl>
-    <Version>6.1.0</Version>
+    <Version>6.1.1</Version>
     <Copyright>Data Juggler - Corby Nichols</Copyright>
     <RepositoryType>Git Hub</RepositoryType>
     <RepositoryUrl>https://github.com/DataJuggler/DataJuggler.Net6.git</RepositoryUrl>
     <PackageTags>C#, SQL Server, DataTier.Net, DataJuggler.Net</PackageTags>
     <PackageReleaseNotes>
+		4.18.2022: After only 18 years, I discovered that I the data type Date in SQL Server was not mapped.
+		I always use DateTime, but I have a project with just Date data type and realized this isn't parsed.
+		One of the advantages of being unpopular is no one sees my mistakes.
+		
 		4.14.2022: I added two properties to DataTable and StoredProcedure classes, to keep track of
 		UsesAnsiNulls and UseQuotedIdentifiers. I now set these objects when I load the DatabaseSchema.
 		It turns out, the text for the Defition of the View or Stored Procedure already had this, so not
