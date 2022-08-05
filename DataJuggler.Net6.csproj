@@ -17,12 +17,16 @@ CSharpClassWriter - A class that is useful in code generating C# classes.
 </Description>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/DataJuggler/DataJuggler.Net6</PackageProjectUrl>
-    <Version>6.1.4</Version>
+    <Version>6.2.0</Version>
     <Copyright>Data Juggler - Corby Nichols</Copyright>
     <RepositoryType>Git Hub</RepositoryType>
     <RepositoryUrl>https://github.com/DataJuggler/DataJuggler.Net6.git</RepositoryUrl>
     <PackageTags>C#, SQL Server, DataTier.Net, DataJuggler.Net</PackageTags>
-    <PackageReleaseNotes>6.17.2022 v6.1.4: I updated DataJuggler.Cryptography package.
+    <PackageReleaseNotes>8.5.2022 v6.2.0: I now compare and script DefaultValueCheckConstraints and Foreign Key check 
+constraints. After working on one of my databases I realized constraints that have No Check
+are not working. Still the Generate Scripts is saving me time as it improves.
+
+6.17.2022 v6.1.4: I updated DataJuggler.Cryptography package.
 
 6.8.2022: I updated DataJuggler.Cryptography package.
 
@@ -84,6 +88,7 @@ Version 2.5.0: This version converted the .Net Core version to .Net 5. All the d
 
   <ItemGroup>    
     <PackageReference Include="DataJuggler.Cryptography" Version="6.0.5" />    
+    <PackageReference Include="DataJuggler.UltimateHelper" Version="6.0.6" />    
     <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.1" />
   </ItemGroup>
 

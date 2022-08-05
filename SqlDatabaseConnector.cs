@@ -1542,7 +1542,7 @@ namespace DataJuggler.Net6
                     // if the dataTable exists
                     if (dataTable != null)
                     {
-                        // create the sql to get all the indexes for this table
+                        // create the sql to get all the CheckConstraints for this table
                         string sql = "SELECT TABLE_NAME, COLUMN_NAME, CHECK_CLAUSE, cc.CONSTRAINT_NAME FROM INFORMATION_SCHEMA.CHECK_CONSTRAINTS cc INNER JOIN INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE c ON cc.CONSTRAINT_NAME = c.CONSTRAINT_NAME Where TABLE_NAME = '[TableName]' ORDER BY TABLE_NAME, COLUMN_NAME".Replace("[TableName]", dataTable.Name);
 
                         // Open The command Object
@@ -1556,21 +1556,25 @@ namespace DataJuggler.Net6
 
                         // Fill DataAdapter
                         adapter.Fill(DS, "tables");
+                        
+                        // if there is at least one row
+                       if (DS.Tables["tables"].Rows.Count > 0)
+                       {
+                            // Load the CheckConstraints
+                            foreach (System.Data.DataRow dataRow in DS.Tables["tables"].Rows)
+                            {
+                                // Create a new CheckConstraint object
+                                checkConstraint = new CheckConstraint();
 
-                        // Load the CheckConstraints
-                        foreach (System.Data.DataRow dataRow in DS.Tables["tables"].Rows)
-                        {
-                            // Create a new CheckConstraint object
-                            checkConstraint = new CheckConstraint();
+                                // map the properites in the dataRow to the new checkConstraint object
+                                checkConstraint.TableName = (string) dataRow["Table_Name"];
+                                checkConstraint.ColumnName = (string) dataRow["Column_Name"];
+                                checkConstraint.CheckClause = (string) dataRow["Check_Clause"];
+                                checkConstraint.ConstraintName = (string) dataRow["Constraint_Name"];
 
-                            // map the properites in the dataRow to the new checkConstraint object
-                            checkConstraint.TableName = (string) dataRow["Table_Name"];
-                            checkConstraint.ColumnName = (string) dataRow["Column_Name"];
-                            checkConstraint.CheckClause = (string) dataRow["Check_Clause"];
-                            checkConstraint.ConstraintName = (string) dataRow["Constraint_Name"];
-
-                            // add the new DataIndex to the indexes collection
-                            checkConstraints.Add(checkConstraint);
+                                // add the new DataIndex to the indexes collection
+                                checkConstraints.Add(checkConstraint);
+                            }
                         }
                     }
                 }
@@ -2436,6 +2440,9 @@ namespace DataJuggler.Net6
                                 
                                 // load the Check Constraints
                                 dataTable.CheckConstraints = LoadCheckConstraints(dataTable);
+
+                                // Update 8.4.2022 load the default value Constraints
+                                dataTable.DefaultValueConstraints = LoadDefaultValueConstraints(dataTable);
                             }
 
 						    // Add This table
@@ -2618,6 +2625,88 @@ namespace DataJuggler.Net6
             }
             #endregion
 
+            #region LoadDefaultValueConstraints(DataTable dataTable)
+            /// <summary>
+            /// returns a list of Default Value Constraints
+            /// </summary>
+            public List<DefaultValueConstraint> LoadDefaultValueConstraints(DataTable dataTable)
+            {
+                // initial value
+                List<DefaultValueConstraint> defaultValueConstraints = new List<DefaultValueConstraint>();
+
+                // local
+                DefaultValueConstraint defaultValueConstraint = null;
+
+                try
+                {
+                    // if the dataTable exists
+                    if (dataTable != null)
+                    {
+                        // create the sql to get all the CheckConstraints for this table
+                        string sql = "Select con.[name] as Constraint_Name, Schema_Name(t.schema_id) + '.' + t.[name]  as [Table], col.[name] as Column_Name, con.[definition] from sys.default_constraints con left outer join sys.objects t on con.parent_object_id = t.object_id left outer join sys.all_columns col on con.parent_column_id = col.column_id and con.parent_object_id = col.object_id Where t.name = '[TableName]' order by con.name".Replace("[TableName]", dataTable.Name);
+
+                        // Open The command Object
+                        SqlCommand command = new SqlCommand(sql, DatabaseConnection);
+
+                        // Create a data adapter
+                        SqlDataAdapter adapter = new SqlDataAdapter(command);
+
+                        // Create And Open Data
+                        DataSet DS = new DataSet();
+
+                        // Fill DataAdapter
+                        adapter.Fill(DS, "tables");
+                        
+                        // if there is at least one row
+                       if (DS.Tables["tables"].Rows.Count > 0)
+                       {
+                            // Load the CheckConstraints
+                            foreach (System.Data.DataRow dataRow in DS.Tables["tables"].Rows)
+                            {
+                                // Create a new CheckConstraint object
+                                defaultValueConstraint = new DefaultValueConstraint();
+
+                                // map the properites in the dataRow to the new checkConstraint object
+                                defaultValueConstraint.TableName = (string) dataRow["Table"];
+                                defaultValueConstraint.ColumnName = (string) dataRow["Column_Name"];                                
+                                defaultValueConstraint.ConstraintName = (string) dataRow["Constraint_Name"];
+
+                                string defaultValue = (string) dataRow["definition"];
+                                
+                                // if the string exists
+                                if (TextHelper.Exists(defaultValue))
+                                {
+                                    // remove any parents
+                                    defaultValue = defaultValue.Replace("(", "").Replace(")", "");
+
+                                    // Parse the DefaultValue
+                                    defaultValueConstraint.DefaultValue = NumericHelper.ParseDouble(defaultValue, -1090, -1091);
+                                }
+
+                                // if the value appears to be a valid number and been parsed
+                                if ((defaultValueConstraint.DefaultValue != -1090) && (defaultValueConstraint.DefaultValue != -1091))
+                                {
+                                    // add the new DefaultValueConstraint to the DefaultValueConstraints collection
+                                    defaultValueConstraints.Add(defaultValueConstraint);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception error)
+                {
+                    // for debugging only
+                    string err = error.ToString();
+
+                    // Show the error to the output window if open.
+                    DebugHelper.WriteDebugError("LoadCheckConstraints", "SQLDatabaseConnector", error);
+                }
+                
+                // return value
+                return defaultValueConstraints;
+            }
+            #endregion
+            
             #region LoadForeignKeys(ref Database database)
             /// <summary>
             /// This method is used to load the foreign keys for each table in the database given.

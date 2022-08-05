@@ -24,7 +24,7 @@ namespace DataJuggler.Net6
         
             #region FindForeignKey(string foreignKeyName, DataTable table)
             /// <summary>
-            /// This method attempts to find a foreign key by name if it exists in the table given.
+            /// This method attempts to find a foreign key by columnName and referenceColumnName if it exists in the table given.
             /// </summary>
             /// <param name="name"></param>
             /// <param name="table"></param>
@@ -34,14 +34,14 @@ namespace DataJuggler.Net6
                 // initial value
                 ForeignKeyConstraint foreignKey = null;
 
-                // if the foreignKeyName exists and the table exists and the table has one or more fields
+                // if the foreignKeyName and referenceColumnName exist and the table exists and the table has one or more fields
                 if ((TextHelper.Exists(foreignKeyName)) && (NullHelper.Exists(table)) && (ListHelper.HasOneOrMoreItems(table.Fields)))
                 {
                     // if the foreign keys exist for this table
                     if (NullHelper.Exists(table.ForeignKeys))
                     {
                         // return the foreignKey if it exists
-                        foreignKey = table.ForeignKeys.FirstOrDefault(x => x.Name == foreignKeyName);
+                        foreignKey = table.ForeignKeys.FirstOrDefault(x => x.ForeignKey == foreignKeyName);
                     }
                 }
 

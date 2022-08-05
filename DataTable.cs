@@ -35,6 +35,7 @@ namespace DataJuggler.Net6
         private List<DataIndex> indexes;
         private List<CheckConstraint> checkConstraints;
         private List<ForeignKeyConstraint> foreignKeys;
+        private List<DefaultValueConstraint> defaultValueConstraints;
         private string tag;
         private string schemaName;
         private bool createBindingCallback;
@@ -72,8 +73,7 @@ namespace DataJuggler.Net6
 				this.Rows = new List<DataRow>();
 				
 				// Create SQLGenerator
-				this.sqlgenerator = new	SQLGenerator();
-				
+				this.sqlgenerator = new	SQLGenerator();				
 			}
 			#endregion
 
@@ -523,6 +523,17 @@ namespace DataJuggler.Net6
 				}
 			}
 			#endregion	
+            
+            #region DefaultValueConstraints
+            /// <summary>
+            /// This property gets or sets the value for 'DefaultValueConstraints'.
+            /// </summary>
+            public List<DefaultValueConstraint> DefaultValueConstraints
+            {
+                get { return defaultValueConstraints; }
+                set { defaultValueConstraints = value; }
+            }
+            #endregion
             
             #region ForeignKeys
             /// <summary>
